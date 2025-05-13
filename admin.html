@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Administração - CineLog</title>
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <!-- Adicionado script inicial para garantir visibilidade correta -->
+  <script>
+    // Ler estado atual da autenticação direto do localStorage
+    (function() {
+      try {
+        const auth = JSON.parse(localStorage.getItem('auth') || '{}');
+        // Ocultar todos os painéis inicialmente, até determinar qual mostrar
+        document.addEventListener('DOMContentLoaded', function() {
+          document.getElementById('admin-panel').style.display = 'none';
+          document.getElementById('access-denied').style.display = 'none';
+          document.getElementById('login-required').style.display = 'none';
+        });
+      } catch (e) {
+        console.error('Erro ao inicializar autenticação:', e);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <!-- Notification Container (usado por utils.js showNotification) -->
+  <div id="notification-container"></div>
+
+  <!-- Navbar placeholder -->
+  <div id="navbar-container"></div>
+
+  <main class="container">
+    <section id="admin-panel" data-auth="admin">
+      <h1>Painel de Administração</h1>
+      
+      <div class="admin-tabs">
+        <button class="tab-button active" data-tab="users">Usuários</button>
+        <button class="tab-button" data-tab="movies">Filmes</button>
+        <button class="tab-button" data-tab="reviews">Avaliações</button>
+      </div>
+      
+      <div id="users-tab" class="tab-content active">
+        <h2>Gerenciamento de Usuários</h2>
+        
+        <div class="stats-summary">
+            <div class="stats-row">
+            <div class="card">
+                <h3>Total de Usuários</h3>
+                <p id="total-users">0</p>
+            </div>
+            <div class="card">
+                <h3>Administradores</h3>
+                <p id="admin-count">0</p>
+            </div>
+            <div class="card">
+                <h3>Usuário Mais Ativo</h3>
+                <p id="most-active-user">-</p>
+                <small id="most-active-count">0 contribuições</small>
+            </div>
+            </div>
+        </div>
+        
+        <h3>Lista de Usuários</h3>
+        <div class="table-container">
+            <table id="users-table">
+            <thead>
+                <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Função</th>
+                <th>Data de Registro</th>
+                <th>Avaliações</th>
+                <th>Filmes</th>
+                <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                <td colspan="8" class="text-center">Carregando usuários...</td>
+                </tr>
+            </tbody>
+            </table>
+        </div>
+        </div>
+      
+      <div class="tab-content" id="movies-tab">
+        <h2>Gerenciamento de Filmes</h2>
+        <p>Funcionalidade em desenvolvimento</p>
+      </div>
+      
+      <div class="tab-content" id="reviews-tab">
+        <h2>Gerenciamento de Avaliações</h2>
+        <p>Funcionalidade em desenvolvimento</p>
+      </div>
+    </section>
+    
+    <section id="access-denied" data-auth="authenticated" style="display: none;">
+      <div class="error-container">
+        <h2>Acesso Negado</h2>
+        <p>Você não tem permissão para acessar esta página.</p>
+        <p>Esta seção é restrita a administradores do sistema.</p>
+        <a href="index.html" class="btn btn-primary">Voltar para a Página Inicial</a>
+      </div>
+    </section>
+    
+    <section id="login-required" data-auth="unauthenticated" style="display: none;">
+      <div class="error-container">
+        <h2>Login Necessário</h2>
+        <p>Você precisa estar logado para acessar esta página.</p>
+        <a href="login.html" class="btn btn-primary">Fazer Login</a>
+      </div>
+    </section>
+  </main>
+  
+  <!-- Modal de confirmação para ações críticas -->
+  <div id="confirm-modal" class="modal">
+    <div class="modal-content">
+      <h3 id="modal-title">Confirmar Ação</h3>
+      <p id="modal-message">Tem certeza que deseja realizar esta ação?</p>
+      <div class="modal-buttons">
+        <button id="modal-cancel" class="btn btn-secondary">Cancelar</button>
+        <button id="modal-confirm" class="btn btn-danger">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="./js/utils.js"></script>
+  <script type="module" src="./js/auth.js"></script>
+  
+  <!-- Inicialização da interface -->
+  <script type="module">
+    import { initializeNavbar } from './js/components.js';
+    import { authService } from './js/auth.js';
+    
+    // Espera todos os elementos serem carregados
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM carregado, inicializando navbar...');
+      initializeNavbar();
+      
+      // Verificar diretamente o localStorage para determinar visibilidade inicial
+      const checkAuthAndShowPanel = () => {
+        try {
+          const auth = JSON.parse(localStorage.getItem('auth') || '{}');
+          const adminPanel = document.getElementById('admin-panel');
+          const accessDenied = document.getElementById('access-denied');
+          const loginRequired = document.getElementById('login-required');
+          
+          if (auth && auth.user && auth.user.role === 'ADMIN') {
+            console.log('Verificação direta: Usuário é admin');
+            adminPanel.style.display = 'block';
+            accessDenied.style.display = 'none';
+            loginRequired.style.display = 'none';
+          } else if (auth && auth.token) {
+            console.log('Verificação direta: Usuário autenticado, não é admin');
+            adminPanel.style.display = 'none';
+            accessDenied.style.display = 'block';
+            loginRequired.style.display = 'none';
+          } else {
+            console.log('Verificação direta: Usuário não autenticado');
+            adminPanel.style.display = 'none';
+            accessDenied.style.display = 'none';
+            loginRequired.style.display = 'block';
+          }
+        } catch (e) {
+          console.error('Erro ao verificar autenticação:', e);
+        }
+      };
+      
+      // Verificar imediatamente e também após um pequeno atraso
+      checkAuthAndShowPanel();
+      setTimeout(checkAuthAndShowPanel, 500);
+      
+      // Verificar estado do auth depois de 1,5 segundos (fallback)
+      setTimeout(() => {
+        console.log('Verificação baseada no authService');
+        if (authService.isAuthenticated()) {
+          if (authService.isAdmin()) {
+            document.getElementById('admin-panel').style.display = 'block';
+            document.getElementById('access-denied').style.display = 'none';
+            document.getElementById('login-required').style.display = 'none';
+          } else {
+            document.getElementById('admin-panel').style.display = 'none';
+            document.getElementById('access-denied').style.display = 'block';
+            document.getElementById('login-required').style.display = 'none';
+          }
+        } else {
+          document.getElementById('admin-panel').style.display = 'none';
+          document.getElementById('access-denied').style.display = 'none';
+          document.getElementById('login-required').style.display = 'block';
+        }
+        
+        // Forçar atualização da UI
+        authService.updateAuthUI();
+      }, 1500);
+    });
+  </script>
+  
+  <!-- Scripts específicos -->
+  <script type="module" src="./js/admin.js"></script>
+  
+  <!-- Script direto para garantir visibilidade correta -->
+  <script>
+    // Verificação adicional após tudo carregar
+    window.addEventListener('load', function() {
+      // Verificações periódicas para garantir a visibilidade correta
+      const interval = setInterval(function() {
+        try {
+          const auth = JSON.parse(localStorage.getItem('auth') || '{}');
+          const adminPanel = document.getElementById('admin-panel');
+          const accessDenied = document.getElementById('access-denied');
+          const loginRequired = document.getElementById('login-required');
+          
+          if (auth && auth.user && auth.user.role === 'ADMIN') {
+            // Se usuário é admin mas o painel está oculto, corrigir
+            if (adminPanel && adminPanel.style.display !== 'block') {
+              console.log('Correção: Mostrando painel admin');
+              adminPanel.style.display = 'block';
+              if (accessDenied) accessDenied.style.display = 'none';
+              if (loginRequired) loginRequired.style.display = 'none';
+            }
+          }
+        } catch (e) {}
+      }, 2000);
+      
+      // Limpar o intervalo após 10 segundos
+      setTimeout(() => clearInterval(interval), 10000);
+    });
+  </script>
+</body>
+</html>

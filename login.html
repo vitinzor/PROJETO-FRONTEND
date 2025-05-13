@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | CineLog</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="dark-bg">
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-hidden"></div>
+
+    <!-- A navbar será injetada aqui pelo JavaScript -->
+
+    <main>
+        <div class="register-container">
+            <div class="register-header">
+                <h1>Entrar</h1>
+                <p>Acesse sua conta no CineLog para avaliar e discutir filmes.</p>
+            </div>
+            
+            <form id="login-form" class="register-form">
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
+                    <i class="validation-icon fas fa-check-circle"></i>
+                    <span class="error-message">Por favor, insira um e-mail válido</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <div class="password-container">
+                        <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
+                        <i class="input-icon fas fa-eye-slash toggle-password"></i>
+                    </div>
+                    <span class="error-message">Por favor, insira sua senha</span>
+                </div>
+                
+                <button type="submit" class="btn-register">Entrar</button>
+            </form>
+            
+            <div class="register-footer">
+                Não tem uma conta? <a href="register.html">Cadastre-se</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script type="module" src="./js/utils.js"></script>
+    <script type="module">
+        import { initializeNavbar } from './js/components.js';
+        document.addEventListener('DOMContentLoaded', initializeNavbar);
+    </script>
+    <script type="module" src="./js/auth.js"></script>
+    <script type="module" src="./js/login.js"></script>
+</body>
+</html>

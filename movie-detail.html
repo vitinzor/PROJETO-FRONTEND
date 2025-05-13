@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalhes do Filme | CineLog</title>
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="dark-bg">
+  <div id="notification-container" class="notification-hidden"></div>
+
+  <!-- A navbar será injetada aqui pelo JavaScript -->
+
+  <main>
+    <section class="movie-detail-container">
+      <!-- Seção principal do filme -->
+      <div class="movie-header">
+        <div class="poster-container">
+          <img id="movie-poster" class="movie-poster-detail" alt="Poster do Filme" 
+               onerror="this.src='./images/poster-placeholder.png'">
+        </div>
+        
+        <div class="movie-info">
+          <h1 id="movie-title" class="movie-title"></h1>
+          
+          <!-- Metadados do filme -->
+          <div class="movie-meta">
+            <span id="movie-year" class="movie-meta-item"></span>
+            <span id="movie-director" class="movie-meta-item"></span>
+            <span id="movie-duration" class="movie-meta-item"></span>
+          </div>
+          
+          <!-- Gênero e descrição -->
+          <div id="movie-genre" class="movie-genre"></div>
+          <p id="movie-description" class="movie-description"></p>
+          
+          <!-- Botões de ação -->
+          <div id="movie-actions" class="movie-actions" style="display: none;">
+            <a href="#" id="edit-movie-btn" class="btn-primary"><i class="fas fa-edit"></i> Editar</a>
+            <button id="delete-movie-btn" class="btn-danger"><i class="fas fa-trash"></i> Excluir</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Sidebar (avaliação média e formulário) -->
+      <div class="sidebar">
+        <!-- Card de avaliação média -->
+        <div class="average-rating-card">
+          <h3>Avaliação Média</h3>
+          <div id="rating-value" class="big-rating"></div>
+          <div id="average-rating" class="big-stars star-rating"></div>
+          <div class="rating-count"><span id="rating-count">0</span> avaliações</div>
+        </div>
+        
+        <!-- Formulário de avaliação (apenas para usuários logados) -->
+        <div data-auth="authenticated" class="review-form-container">
+          <div class="rating-section">
+            <div class="rating-label">Avaliação</div>
+            <div class="star-rating-input">
+              <input type="radio" id="star5" name="rating" value="5">
+              <label for="star5" class="fas fa-star"></label>
+              
+              <input type="radio" id="star4" name="rating" value="4">
+              <label for="star4" class="fas fa-star"></label>
+              
+              <input type="radio" id="star3" name="rating" value="3">
+              <label for="star3" class="fas fa-star"></label>
+              
+              <input type="radio" id="star2" name="rating" value="2">
+              <label for="star2" class="fas fa-star"></label>
+              
+              <input type="radio" id="star1" name="rating" value="1">
+              <label for="star1" class="fas fa-star"></label>
+            </div>
+          </div>
+          
+          <button class="activity-history-button">
+            <span>Mostrar minhas avaliações</span>
+          </button>
+          
+          <div class="form-group comment-group">
+            <textarea id="comment" name="comment" rows="3" placeholder="Escreva sua análise..."></textarea>
+          </div>
+          
+          <!-- Classe alterada de form-actions para review-form-actions -->
+          <div class="review-form-actions">
+            <button type="submit" id="review-form" class="btn-primary">Publicar Avaliação</button>
+          </div>
+        </div>
+        
+        <!-- Mensagem para usuários não logados -->
+        <div data-auth="unauthenticated" class="login-message">
+          Para avaliar este filme, por favor <a href="login.html">faça login</a> ou <a href="register.html">crie uma conta</a>.
+        </div>
+      </div>
+      
+      <!-- Conteúdo principal (avaliações) -->
+      <div class="main-content">
+        <div class="reviews-section">
+          <div class="reviews-header">
+            <h2>Avaliações <span id="reviews-count" class="badge"></span></h2>
+            <button id="sort-reviews" class="btn-icon" aria-label="Ordenar avaliações">
+              <i class="fas fa-sort"></i>
+            </button>
+          </div>
+          
+          <div id="reviews-list" class="review-list">
+            <!-- Reviews serão injetadas aqui pelo JavaScript -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Scripts -->
+  <script type="module" src="./js/utils.js"></script>
+  <script type="module">
+    import { initializeNavbar } from './js/components.js';
+    document.addEventListener('DOMContentLoaded', initializeNavbar);
+  </script>
+  <script type="module" src="./js/auth.js"></script>
+  <script type="module" src="./js/movieDetail.js"></script>
+</body>
+</html>

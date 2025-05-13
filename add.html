@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Filme | CineLog</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="dark-bg">
+    <!-- Notification Container (used by utils.js showNotification) -->
+    <div id="notification-container"></div>
+
+    <!-- A navbar será injetada aqui pelo JavaScript -->
+
+    <main>
+        <form id="add-movie-form" class="form">
+            <h2>Adicionar Novo Filme</h2>
+            
+            <div class="form-group">
+                <label for="title">Título:</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            
+            <!-- Adicionado campo de diretor -->
+            <div class="form-group">
+                <label for="director">Diretor:</label>
+                <input type="text" id="director" name="director" placeholder="Ex: Christopher Nolan">
+            </div>
+            
+            <!-- Campo de gênero -->
+            <div class="form-group">
+                <label for="genre">Gênero:</label>
+                <input type="text" id="genre" name="genre" placeholder="Ex: Ação, Drama, Comédia">
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Descrição:</label>
+                <textarea id="description" name="description" rows="6" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="releaseYear">Ano de Lançamento:</label>
+                <input type="number" id="releaseYear" name="releaseYear" required min="1800" max="2099">
+            </div>
+            
+            <div class="form-group">
+                <label for="image">Imagem (Upload):</label>
+                <input type="file" id="image" name="image" accept="image/*">
+            </div>
+
+            <button type="submit">Salvar Filme</button>
+        </form>
+    </main>
+
+    <!-- Scripts -->
+    <script type="module" src="./js/utils.js"></script>
+    <script type="module">
+        import { initializeNavbar } from './js/components.js';
+        document.addEventListener('DOMContentLoaded', initializeNavbar);
+    </script>
+    <script type="module" src="./js/auth.js"></script>
+    <script type="module">
+        // Import necessary modules
+        import { movieService } from './js/main.js';
+        import { authService } from './js/auth.js';
+        import { showNotification } from './js/utils.js';
+
+        // Check Authentication on Page Load
+        document.addEventListener('DOMContentLoaded', () => {
+             setTimeout(() => {
+                 if (!authService.isAuthenticated()) {
+                     showNotification('Você precisa estar logado para adicionar filmes.', 'error');
+                     localStorage.setItem('redirectTo', window.location.pathname + window.location.search);
+                     window.location.href = '/login.html';
+                 } else {
+                     console.log('User is authenticated, can add movie.');
+                     setupAddMovieForm();
+                 }
+             }, 50);
+        });
+
+        // Setup Add Movie Form
+        function setupAddMovieForm() {
+            const addMovieForm = document.getElementById('add-movie-form');
+
+            if (addMovieForm) {
+                addMovieForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    
+                    const submitButton = addMovieForm.querySelector('button[type="submit"]');
+                    try {
+                        submitButton.disabled = true;
+                        submitButton.textContent = 'Salvando...';
+
+                        const formData = new FormData(addMovieForm);
+                        
+                        // Validação reforçada
+                        if (!formData.get('title')?.trim() || 
+                            !formData.get('description')?.trim() || 
+                            !formData.get('releaseYear')) {
+                            showNotification('Preencha todos os campos obrigatórios', 'error');
+                            return;
+                        }
+
+                        const movieData = {
+                            title: formData.get('title').trim(),
+                            description: formData.get('description').trim(),
+                            genre: formData.get('genre').trim(), // Campo de gênero
+                            director: formData.get('director').trim(), // Adicionado campo diretor
+                            releaseYear: formData.get('releaseYear'),
+                            imageFile: formData.get('image')
+                        };
+
+                        // Validação do ano
+                        const currentYear = new Date().getFullYear();
+                        if (movieData.releaseYear < 1800 || movieData.releaseYear > currentYear + 2) {
+                            showNotification(`Ano inválido (deve ser entre 1800 e ${currentYear + 2})`, 'error');
+                            return;
+                        }
+
+                        // Validação de arquivo
+                        if (movieData.imageFile && movieData.imageFile.size > 5 * 1024 * 1024) {
+                            showNotification('A imagem deve ter menos de 5MB', 'error');
+                            return;
+                        }
+
+                        const newMovie = await movieService.createMovie(movieData);
+                        
+                        if (newMovie) {
+                            showNotification('Filme cadastrado com sucesso!', 'success');
+                            setTimeout(() => window.location.href = 'index.html', 1500);
+                        }
+
+                    } catch (error) {
+                        console.error('Erro no cadastro:', error);
+                        showNotification('Erro ao cadastrar filme. Tente novamente.', 'error');
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Salvar Filme';
+                    }
+                });
+            } else {
+                console.error('Add movie form with ID "add-movie-form" not found!');
+                showNotification('Erro: Formulário de adição não encontrado.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

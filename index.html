@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineLog</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Optional: Add a favicon -->
+    <!-- <link rel="icon" href="favicon.ico" type="image/x-icon"> -->
+</head>
+<body>
+    <!-- Notification Container (used by utils.js showNotification) -->
+    <div id="notification-container"></div>
+
+    <!-- A navbar será injetada aqui pelo JavaScript -->
+    <!-- Removemos a navbar estática e deixamos o components.js cuidar disso -->
+
+    <main>
+        <!-- Movie Grid Container -->
+        <section id="movie-grid" class="grid">
+            <!-- Movie cards will be rendered here by JavaScript -->
+            <p class="message info">Carregando filmes...</p> <!-- Loading message -->
+        </section>
+
+        <!-- Pagination Container -->
+        <div id="pagination" class="pagination">
+            <!-- Pagination buttons and info will be rendered here by JavaScript -->
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <!-- Order matters: utils first, then components, then auth (depends on utils), then main (depends on auth/utils), then ui (depends on others) -->
+    <script type="module" src="./js/utils.js"></script>
+    <script type="module">
+        import { initializeNavbar } from './js/components.js';
+        document.addEventListener('DOMContentLoaded', initializeNavbar);
+    </script>
+    <script type="module" src="./js/auth.js"></script> <!-- Handles initial auth check and UI update -->
+    <script type="module" src="./js/main.js"></script> <!-- Handles fetching data, pagination logic, calls rendering from ui.js -->
+    <script type="module" src="./js/ui.js"></script>   <!-- Handles rendering UI components and event delegation -->
+</body>
+</html>
