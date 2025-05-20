@@ -698,6 +698,16 @@ main {
   text-align: center;
 }
 
+/* Garantir que o título "Avaliação" esteja centralizado */
+.review-form-container .rating-section .rating-label {
+  font-size: 22px !important;
+  text-align: center !important;
+  display: block !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
 /* Seção de estrelas - com direção correta */
 .star-rating-input {
   text-align: center;
@@ -2486,7 +2496,28 @@ textarea::-webkit-scrollbar-track {
   background-color: var(--card-bg);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(167, 19, 19, 0.15);
+  /* Personalização da barra de rolagem */
+  overflow-x: auto; /* Mantém a rolagem horizontal */
+  scrollbar-width: thin; /* Para Firefox */
+  scrollbar-color: transparent transparent; /* Para Firefox (tracking, thumb) */
+  -ms-overflow-style: none; /* Para IE */
+}
+
+/* Para navegadores baseados em Webkit (Chrome, Safari, Opera) */
+.table-container::-webkit-scrollbar {
+  height: 6px; /* Altura da barra horizontal */
+  width: 6px; /* Largura da barra vertical */
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: transparent; /* Fundo transparente */
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.1); /* Cor suave e semi-transparente */
+  border-radius: 20px; /* Cantos arredondados */
+  border: transparent; /* Borda transparente */
 }
 
 #admin-panel table {
@@ -2625,4 +2656,3 @@ textarea::-webkit-scrollbar-track {
     min-width: 700px;
   }
 }
-

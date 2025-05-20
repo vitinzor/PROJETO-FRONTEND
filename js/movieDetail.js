@@ -507,20 +507,28 @@ function loadAvatars() {
             return;
         }
         
-        // Adicionar o caminho correto para a imagem - essa é a principal correção
+        // CORRIGIDO: Usar o caminho correto para a pasta de avatares no Cloudinary
         const img = new Image();
-        img.src = `${config.baseUrl}/uploads/avatars/${filename}`;
+        
+        // A pasta correta é "cinelog/avatars" de acordo com seu controller
+        img.src = `https://res.cloudinary.com/dz4v2tibm/image/upload/cinelog/avatars/${filename}`;
+        
         img.alt = "Avatar do usuário";
         img.className = "avatar-image";
         
+        // Adicionar log para debug
+        console.log(`Tentando carregar avatar: ${img.src}`);
+        
         // Se a imagem carregar com sucesso
         img.onload = function() {
+            console.log(`Avatar carregado com sucesso: ${img.src}`);
             avatarElement.innerHTML = '';
             avatarElement.appendChild(img);
         };
         
         // Se a imagem falhar, mostrar a inicial
         img.onerror = function() {
+            console.error(`Falha ao carregar imagem do Cloudinary: ${img.src}`);
             createInitialAvatar(avatarElement, userInitial);
         };
     });
@@ -592,7 +600,14 @@ const reviewTemplate = (review) => {
     // Extrair apenas o nome do arquivo, se houver avatarUrl
     let filename = '';
     if (user.avatarUrl) {
-        filename = user.avatarUrl.split('/').pop();
+        // Verificar se é uma URL do Cloudinary
+        if (user.avatarUrl.includes('cloudinary.com')) {
+            // Para URLs do Cloudinary, precisamos apenas do nome do arquivo
+            filename = user.avatarUrl.split('/').pop();
+        } else {
+            // Para qualquer outro formato de URL
+            filename = user.avatarUrl.split('/').pop();
+        }
         console.log("Nome do arquivo de avatar:", filename);
     }
     

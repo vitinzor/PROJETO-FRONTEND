@@ -35,6 +35,12 @@ export function renderNavbar(currentPage) {
 
 // Função para inicializar o componente da navbar em todas as páginas
 export function initializeNavbar() {
+  // Verifica se a navbar já existe para evitar duplicação
+  if (document.querySelector('header.navbar')) {
+    console.log('Navbar já existe, ignorando inicialização duplicada');
+    return;
+  }
+
   // Determinar a página atual com base no URL
   const path = window.location.pathname;
   let currentPage = 'home';

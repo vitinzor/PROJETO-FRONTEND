@@ -1,4 +1,105 @@
 // js/utils.js
+import { authService } from './auth.js';
+
+// --- API Communication Utils ---
+// Configurações globais para a API
+const API_URL = 'http://localhost:3000';
+
+// Função para requisições autenticadas
+export async function fetchWithAuth(endpoint, options = {}) {
+  const url = endpoint.startsWith('http') ? endpoint : `${API_URL}${endpoint}`;
+  
+  // Prepara as opções da requisição com o token de autenticação
+  const token = authService.getToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers
+  };
+  
+  // Adiciona o token de Authorization se disponível
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  // Configura a requisição com credentials e headers
+  const fetchOptions = {
+    ...options,
+    headers,
+    credentials: 'include' // Importante para cookies
+  };
+  
+  try {
+    // Faz a requisição
+    let response = await fetch(url, fetchOptions);
+    
+    // Se a resposta indica token expirado (401)
+    if (response.status === 401) {
+      console.log("Token expirado ou inválido, tentando renovar...");
+      
+      // Tenta renovar o token
+      const tokenRefreshed = await authService.refreshToken();
+      
+      // Se o token foi renovado com sucesso, tenta a requisição novamente
+      if (tokenRefreshed) {
+        console.log("Token renovado com sucesso, repetindo requisição...");
+        // Atualiza o token na requisição
+        const newToken = authService.getToken();
+        headers['Authorization'] = `Bearer ${newToken}`;
+        
+        // Refaz a requisição com o novo token
+        response = await fetch(url, {
+          ...fetchOptions,
+          headers
+        });
+      } else {
+        // Se não conseguiu renovar o token, o usuário precisa fazer login novamente
+        console.error("Não foi possível renovar o token. Redirecionando para login...");
+        authService.logout();
+        window.location.href = '/login.html';
+        throw new Error("Sessão expirada. Por favor, faça login novamente.");
+      }
+    }
+    
+    return response;
+    
+  } catch (error) {
+    console.error("Erro na requisição:", error);
+    throw error;
+  }
+}
+
+// Funções wrapper para os diferentes métodos HTTP
+export const api = {
+  async get(endpoint, options = {}) {
+    return fetchWithAuth(endpoint, {
+      method: 'GET',
+      ...options
+    });
+  },
+  
+  async post(endpoint, data, options = {}) {
+    return fetchWithAuth(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      ...options
+    });
+  },
+  
+  async put(endpoint, data, options = {}) {
+    return fetchWithAuth(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+      ...options
+    });
+  },
+  
+  async delete(endpoint, options = {}) {
+    return fetchWithAuth(endpoint, {
+      method: 'DELETE',
+      ...options
+    });
+  }
+};
 
 // --- Sistema de Notificações ---
 export const showNotification = (message, type = 'success', duration = 5000) => {
@@ -121,7 +222,7 @@ export const clearAllNotifications = () => {
     }
 };
 
-// O resto do arquivo continua igual
+// Função para tratamento de erros de API
 export const handleApiError = async (response, defaultMessage = 'Erro na operação') => {
     let errorMessage = defaultMessage;
     console.error('API Error Status:', response.status);
@@ -157,7 +258,6 @@ export const handleApiError = async (response, defaultMessage = 'Erro na operaç
 };
 
 // --- Função para Formatar Data ---
-// js/utils.js - Apenas a parte da função formatDate
 export const formatDate = (dateString) => {
     if (!dateString) return 'Data indisponível';
     

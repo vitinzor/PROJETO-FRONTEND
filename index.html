@@ -13,9 +13,6 @@
     <!-- Notification Container (used by utils.js showNotification) -->
     <div id="notification-container"></div>
 
-    <!-- A navbar será injetada aqui pelo JavaScript -->
-    <!-- Removemos a navbar estática e deixamos o components.js cuidar disso -->
-
     <main>
         <!-- Movie Grid Container -->
         <section id="movie-grid" class="grid">
@@ -29,15 +26,35 @@
         </div>
     </main>
 
-    <!-- Scripts -->
-    <!-- Order matters: utils first, then components, then auth (depends on utils), then main (depends on auth/utils), then ui (depends on others) -->
+    <!-- Scripts - ORDEM SIMPLIFICADA -->
     <script type="module" src="./js/utils.js"></script>
+    <script type="module" src="./js/auth.js"></script>
     <script type="module">
+        // Importa a função initializeNavbar
         import { initializeNavbar } from './js/components.js';
-        document.addEventListener('DOMContentLoaded', initializeNavbar);
+        
+        // Flag para controlar se a navbar já foi inicializada
+        window.navbarInitialized = false;
+        
+        // Função que garante que a navbar seja inicializada apenas uma vez
+        function setupNavbar() {
+            if (window.navbarInitialized) return;
+            
+            console.log('Inicializando navbar...');
+            window.navbarInitialized = true;
+            initializeNavbar();
+            
+            // Após inicializar a navbar, importa authService e atualiza a UI
+            import('./js/auth.js').then(module => {
+                module.authService.updateAuthUI();
+                console.log('UI atualizada após navbar ser criada');
+            });
+        }
+        
+        // Aguarda o evento de inicialização do auth
+        window.addEventListener('auth-initialized', setupNavbar);
     </script>
-    <script type="module" src="./js/auth.js"></script> <!-- Handles initial auth check and UI update -->
-    <script type="module" src="./js/main.js"></script> <!-- Handles fetching data, pagination logic, calls rendering from ui.js -->
-    <script type="module" src="./js/ui.js"></script>   <!-- Handles rendering UI components and event delegation -->
+    <script type="module" src="./js/main.js"></script>
+    <script type="module" src="./js/ui.js"></script>
 </body>
 </html>
